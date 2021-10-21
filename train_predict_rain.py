@@ -73,7 +73,7 @@ random_st = 42
 
 #-----------preprocessing parameters---------
 #using sampling to balance the dataset T:F = 1:1
-use_sampling = False
+use_sampling = True
 #satellite input frame, default = last 10 frames
 satellite_frame = -10
 # station data time, default is 12 which is means 0:00 ~11:00
@@ -816,18 +816,18 @@ plt.title("Training Loss and Accuracy")
 plt.xlabel("Epoch #")
 plt.ylabel("Loss/Accuracy")
 plt.legend(loc="lower left")
-plt.savefig(args["plot"])
-
+#plt.savefig(args["plot"])
+#model.save(args["model"])
 
 print(second)
-'''
+
 if acc >= 0.6 or history.history["loss"][-1]<0.5:
     plt.savefig(second + '.png')
     model.save(second + '.h5')
-'''
+
 # serialize the model to disk
 print("[INFO] saving model...")
-model.save(args["model"])
+
 
 f_log.close()
 

@@ -57,9 +57,6 @@ ap.add_argument("-wd", "--weather_dataset", required=False,
 	help="path to input dataset", default = "/home/om990301/ncdr_rain_predict/data/weather_image")
 ap.add_argument("-sd", "--satellite_dataset", required=False,
 	help="path to input dataset", default = "/home/om990301/ncdr_rain_predict/data/satellite")
-# ground truth path
-ap.add_argument("-gt", "--gt", type=str, default="/home/om990301/ncdr_rain_predict/data/gt/south.xlsx",
-	help="gt for the data")
 station_path = '/home/om990301/ncdr_rain_predict/data/station_data'
 model_path = "/home/om990301/ncdr_rain_predict/Model/south/1631858915.5861917.h5"
 result_path = "Result/result.txt"
@@ -99,26 +96,12 @@ satellite_y = 340
 
 args = vars(ap.parse_args())
 
-print("[INFO] loading gt")
-gtPaths = args["gt"]
+
 station_time = args["station_time"]
 
-# 讀取 Excel 檔案
-wb = load_workbook(gtPaths)
-sheet = wb.active
 check_file_cnt = 1
 
-gt_time_list = [] 
 
-for row in sheet.rows:
-    #print(row[0].value)
-    if str(row[0].value) not in gt_time_list:
-        gt_time_list.append(str(row[0].value))
-    #for cell in row:
-    #    print(cell.value)
-
-del wb
-del sheet
 # grab the list of images in our dataset directory, then initialize
 # the list of data (i.e., images) and class images
 print("[INFO] loading weather images...")
@@ -230,6 +213,7 @@ for year in os.listdir(station_path):
                     check_file_cnt = check_file_cnt +1
                     print("lack file before: ",date)
                 check_file_cnt = date_cnt
+                data_weather_labels.append("append")
             
             date_dir = month_dir + "/" + date + "/huminity_npy"
             for date_file in os.listdir(date_dir):
@@ -253,28 +237,6 @@ data_station_huminity = np.array(tmp_huminitys)
 data_station_huminity = np.reshape(data_station_huminity,(-1,station_time,210,340,3))
 del tmp_huminitys
 print("number of videos: ", data_station_huminity.shape[0])
-
-
-#find time in labels, then buid the frames
-print("[INFO] category labeling")
-category_labels = []
-positive_number = 0
-sample_list = []
-for i in range(len(data_weather_labels)):
-    if data_weather_labels[i] in gt_time_list:
-        category_labels.append(1)
-        positive_number = positive_number +1
-    else:
-        category_labels.append(0)
-        sample_list.append(i)
-    
-    
-print("number of positive number: ", str(positive_number))
-print("number of negative number: ", str(len(data_weather_labels) - positive_number))
-# perform one-hot encoding on the labels
-print("[INFO] one-hot")
-category_labels = to_categorical(category_labels)
-
 
 print("[INFO] loading station data(temperature)")
 
@@ -494,34 +456,7 @@ for year in os.listdir(station_path):
 data_special_stations = np.array(data_special_stations)
 data_special_stations = np.reshape(data_special_stations,(-1,station_time,len(special_station_input_id)*3))
 print("number of videos: ", data_special_stations.shape)
-#data_special_stations = np.zeros((275,12,6))
-'''
-if use_sampling:
-    print("[INFO] sampling")
-    from random import sample
-    delete_sample_index = sample(sample_list,len(data_weather_labels) - positive_number*2)
-    data_weathers = np.delete(data_weathers,delete_sample_index,0)
-    print("shape of data weathers: ", data_weathers.shape)
 
-    category_labels = np.delete(category_labels,delete_sample_index,0)
-    print("shape of category labels: ", category_labels.shape)
-
-    data_station_temperature = np.delete(data_station_temperature,delete_sample_index,0)
-    print("shape of station temp: ", data_station_temperature.shape)
-
-    data_station_huminity = np.delete(data_station_huminity,delete_sample_index,0)
-    print("shape of station huminity: ", data_station_huminity.shape)
-
-    data_station_wind_direction = np.delete(data_station_wind_direction,delete_sample_index,0)
-    print("shape of station wind direction: ", data_station_wind_direction.shape)
-
-    data_satellite = np.delete(data_satellite,delete_sample_index,0)
-    print("shape of satellite ", data_satellite.shape)
-
-    data_special_stations = np.delete(data_special_stations,delete_sample_index,0)
-    print("shape of special stations ", data_special_stations.shape)
-
-'''
 print("[INFO] check missing data type")
 if data_satellite.shape[0] ==0:
     print("missing satellite data, now pending...")
@@ -531,63 +466,6 @@ if data_weathers.shape[0] == 0:
     print("missing weather data, now pending...")
     data_weathers = np.zeros((data_station_huminity.shape[0],1,340,210,3))
 
-
-print("[INFO] train-test split")
-
-(train_weather_X, test_weather_X, train_weather_Y, test_weather_Y, index_train, index_test) = train_test_split(data_weathers, category_labels, data_weather_labels,
-	test_size=0.20, stratify=category_labels, random_state=random_st)
-#for i in range(len(train_weather_Y)):
-#    if np.argmax(train_weather_Y[i]) == 1:
- #       print("there is positive set in training set")
-  #      break
-print("train_weather shape: ", train_weather_X.shape)
-del data_weathers
-print("finish split weather")
-
-(train_temp_X, test_temp_X, train_temp_Y, test_temp_Y) = train_test_split(data_station_temperature, category_labels,
-	test_size=0.20, stratify=category_labels, random_state=random_st)
-
-del  train_temp_Y
-del  test_temp_Y
-
-del data_station_temperature
-print("finish split temp")
-
-(train_huminity_X, test_huminity_X, train_huminity_Y, test_huminity_Y) = train_test_split(data_station_huminity, category_labels,
-	test_size=0.20, stratify=category_labels, random_state=random_st)
-
-del train_huminity_Y
-del test_huminity_Y
-
-del data_station_huminity
-print("finish split huminity")
-
-(train_wind_X, test_wind_X, train_wind_Y, test_wind_Y) = train_test_split(data_station_wind_direction, category_labels,
-	test_size=0.20, stratify=category_labels, random_state=random_st)
-
-del train_wind_Y
-del test_wind_Y
-
-del data_station_wind_direction
-print("finish split wind")
-
-(train_satellite_X, test_satellite_X, train_satellite_Y, test_satellite_Y) = train_test_split(data_satellite, category_labels,
-	test_size=0.20, stratify=category_labels, random_state=random_st)
-
-del train_satellite_Y
-del test_satellite_Y
-
-del data_satellite
-print("finish split satellite")
-
-(train_special_stations_X, test_special_stations_X, train_special_stations_Y, test_special_stations_Y) = train_test_split(data_special_stations, category_labels,
-	test_size=0.20, stratify=category_labels, random_state=random_st)
-
-del train_special_stations_Y
-del test_special_stations_Y
-
-del data_special_stations
-print("finish split satellite")
 
 
 print("[INFO] load model")
@@ -606,7 +484,7 @@ model.summary()
 # == Provide average scores ==
 second = str(tt.time())
 
-f_log = open(second+".txt", "w")
+f_log = open(result_path, "w")
 print('------------------------------------------------------------------------')
 f_log.write('------------------------------------------------------------------------')
 
@@ -615,47 +493,21 @@ f_log.write('-------------------------------------------------------------------
 # make predictions on the testing set
 print("[INFO] evaluating network...")
 f_log.write("[INFO] evaluating network...")
-predIdxs = model.predict([test_weather_X, 
-test_temp_X, 
-test_huminity_X, 
-test_wind_X, 
-test_satellite_X,
-test_special_stations_X], batch_size=BS)
+predIdxs = model.predict([data_weathers, 
+data_station_temperature, 
+data_station_huminity, 
+data_station_wind_direction, 
+data_satellite,
+data_special_stations], batch_size=BS)
 
 
 # for each image in the testing set we need to find the index of the
 # label with corresponding largest predicted probability
 predIdxs = np.argmax(predIdxs, axis=1)
-# show a nicely formatted classification report
-#print("test index of true")
-#print(labels[np.where(np.argmax(test_weather_Y, axis=1)==1)])
-#f_log(labels[np.where(np.argmax(test_weather_Y, axis=1)==1)])
-print(classification_report(test_weather_Y.argmax(axis=1), predIdxs,
-	target_names=['False', 'True']))
 
-f_log.write(classification_report(test_weather_Y.argmax(axis=1), predIdxs,
-	target_names=['False', 'True']))
-
-# compute the confusion matrix and and use it to derive the raw
-# accuracy, sensitivity, and specificity
-cm = confusion_matrix(test_weather_Y.argmax(axis=1), predIdxs)
-total = sum(sum(cm))
-acc = (cm[0, 0] + cm[1, 1]) / total
-sensitivity = cm[0, 0] / (cm[0, 0] + cm[0, 1])
-specificity = cm[1, 1] / (cm[1, 0] + cm[1, 1])
-# show the confusion matrix, accuracy, sensitivity, and specificity
-print(cm)
-cm_txt = np.array2string(cm)
-f_log.write(cm_txt)
-
-print("acc: {:.4f}".format(acc))
-print("sensitivity: {:.4f}".format(sensitivity))
-print("specificity: {:.4f}".format(specificity))
-
-#f_log.write(cm.tostring())
-f_log.write("acc: {:.4f}".format(acc))
-f_log.write("sensitivity: {:.4f}".format(sensitivity))
-f_log.write("specificity: {:.4f}".format(specificity))
+for i in range(len(predIdxs)):
+    print(str(data_weather_labels[i]) + "   " + str(predIdxs[i]))
+    f_log.write(str(data_weather_labels[i]) + "   " + str(predIdxs[i])+'\n')
 
 
 
