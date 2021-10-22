@@ -381,7 +381,7 @@ for year in os.listdir(station_path):
         month_dir = year_dir + "/" + month
         for date in os.listdir(month_dir):
             date_dir = month_dir + "/" + date
-            for date_file in os.listdir(date_dir):
+            for date_file in sorted(os.listdir(date_dir)):
                 if not date_file.endswith(".txt"):
                     #break
                     continue
@@ -817,14 +817,14 @@ plt.xlabel("Epoch #")
 plt.ylabel("Loss/Accuracy")
 plt.legend(loc="lower left")
 #plt.savefig(args["plot"])
-#model.save(args["model"])
+model.save(args["model"])
 
 print(second)
-
+'''
 if acc >= 0.6 or history.history["loss"][-1]<0.5:
     plt.savefig(second + '.png')
     model.save(second + '.h5')
-
+'''
 # serialize the model to disk
 print("[INFO] saving model...")
 

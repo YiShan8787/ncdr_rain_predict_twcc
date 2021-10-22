@@ -61,7 +61,7 @@ ap.add_argument("-sd", "--satellite_dataset", required=False,
 ap.add_argument("-gt", "--gt", type=str, default="/home/om990301/ncdr_rain_predict/data/gt/south.xlsx",
 	help="gt for the data")
 station_path = '/home/om990301/ncdr_rain_predict/data/station_data'
-model_path = "/home/om990301/ncdr_rain_predict/Model/south/1631858915.5861917.h5"
+model_path = "/home/om990301/ncdr_rain_predict/Model/rain_predict.h5"
 result_path = "Result/result.txt"
 #--------------------------data parameter----------------------
 # station data time
@@ -69,7 +69,7 @@ ap.add_argument("-st", "--station_time", type=int, default=12,
 	help="time for station data")
 
 
-use_sampling = False
+use_sampling = True
 
 satellite_frame = -10
 #north '466900','466940','466920'
@@ -337,7 +337,7 @@ for year in os.listdir(station_path):
     year_dir = station_path + "/" + year
     for month in sorted(os.listdir(year_dir)):
         month_dir = year_dir + "/" + month
-        for date in os.listdir(month_dir):
+        for date in sorted(os.listdir(month_dir)):
             date_dir = month_dir + "/" + date + "/wind_direction_npy"
 
             date_cnt = int(date[-2:])
@@ -428,7 +428,7 @@ for year in os.listdir(station_path):
     year_dir = station_path + "/" + year
     for month in os.listdir(year_dir):
         month_dir = year_dir + "/" + month
-        for date in os.listdir(month_dir):
+        for date in sorted(os.listdir(month_dir)):
             date_dir = month_dir + "/" + date
 
             date_cnt = int(date[-2:])
@@ -494,6 +494,8 @@ for year in os.listdir(station_path):
 data_special_stations = np.array(data_special_stations)
 data_special_stations = np.reshape(data_special_stations,(-1,station_time,len(special_station_input_id)*3))
 print("number of videos: ", data_special_stations.shape)
+
+del tmp_special_stations
 #data_special_stations = np.zeros((275,12,6))
 '''
 if use_sampling:

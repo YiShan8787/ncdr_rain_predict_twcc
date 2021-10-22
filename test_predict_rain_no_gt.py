@@ -58,7 +58,7 @@ ap.add_argument("-wd", "--weather_dataset", required=False,
 ap.add_argument("-sd", "--satellite_dataset", required=False,
 	help="path to input dataset", default = "/home/om990301/ncdr_rain_predict/data/satellite")
 station_path = '/home/om990301/ncdr_rain_predict/data/station_data'
-model_path = "/home/om990301/ncdr_rain_predict/Model/south/1631858915.5861917.h5"
+model_path = "/home/om990301/ncdr_rain_predict/Model/rain_predict.h5"
 result_path = "Result/result.txt"
 #--------------------------data parameter----------------------
 # station data time
@@ -299,7 +299,7 @@ for year in os.listdir(station_path):
     year_dir = station_path + "/" + year
     for month in sorted(os.listdir(year_dir)):
         month_dir = year_dir + "/" + month
-        for date in os.listdir(month_dir):
+        for date in sorted(os.listdir(month_dir)):
             date_dir = month_dir + "/" + date + "/wind_direction_npy"
 
             date_cnt = int(date[-2:])
@@ -390,7 +390,7 @@ for year in os.listdir(station_path):
     year_dir = station_path + "/" + year
     for month in os.listdir(year_dir):
         month_dir = year_dir + "/" + month
-        for date in os.listdir(month_dir):
+        for date in sorted(os.listdir(month_dir)):
             date_dir = month_dir + "/" + date
 
             date_cnt = int(date[-2:])
