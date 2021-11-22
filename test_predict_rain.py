@@ -147,18 +147,11 @@ for imagePath in imagePaths:
     time = label[-8:-4]
     if time == "1200" or time == "1800" or time =="0600":
         continue
-    # load the image, swap color channels, and resize it to be a fixed
-    # 224x224 pixels while ignoring aspect ratio
+    
     image = cv2.imread(imagePath)
-    #if isinstance(image,type(None)):
-    #    print("error")
-    #print(type(image))
-    #image = cv2.resize(image, (224, 224))
+    
     image = image[y:y+y_len,x:x+x_len]
-    #print(image.shape)
-    # update the data and labels lists, respectively
-    #if time == 0:
-     #   cv2.imshow(label, image)
+    
     cv2.waitKey()
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     data.append(image)
@@ -168,19 +161,7 @@ for imagePath in imagePaths:
         data_weather_labels.append(label[3:11])
         #print(imagePath.split(os.path.sep))
     
-    '''
-    if last_label == None:
-        last_label = label[3:11]
-        data_weather_labels.append(last_label)
-        tmp_weathers.append(image)
-    elif last_label == label[3:11]:
-        tmp_weathers.append(image)
-        
-    if len(tmp_weathers) == 4:
-        data_weathers.append(tmp_weathers)
-        tmp_weathers = []
-        last_label = None
-    '''
+    
 
 #print(len(labels))
 # convert the data and labels to NumPy arrays while scaling the pixel
@@ -202,7 +183,7 @@ del data
 
 
 print("[INFO] loading station data(huminity)")
-
+#loading station huminity
 
 tmp_huminitys = []
 
@@ -247,8 +228,7 @@ for year in os.listdir(station_path):
                 #f[f == np.nan] = 0
                 
                 tmp_huminitys.append(f)
-            #data_station_huminity = np.reshape()
-                #print(f.shape)
+            
 data_station_huminity = np.array(tmp_huminitys)
 data_station_huminity = np.reshape(data_station_huminity,(-1,station_time,210,340,3))
 del tmp_huminitys
@@ -256,6 +236,7 @@ print("number of videos: ", data_station_huminity.shape[0])
 
 
 #find time in labels, then buid the frames
+# loading groundtruth
 print("[INFO] category labeling")
 category_labels = []
 positive_number = 0
@@ -277,7 +258,7 @@ category_labels = to_categorical(category_labels)
 
 
 print("[INFO] loading station data(temperature)")
-
+# loading station temp
 #data_station_huminity =[]
 tmp_temps = []
 
@@ -320,15 +301,14 @@ for year in os.listdir(station_path):
                 
                 
                 tmp_temps.append(f)
-            #data_station_huminity = np.reshape()
-                #print(f.shape)
+            
 data_station_temperature = np.array(tmp_temps)
 data_station_temperature = np.reshape(data_station_temperature,(-1,station_time,210,340,3))
 print("number of videos: ", data_station_temperature.shape[0])
 del tmp_temps
 
 print("[INFO] loading station data(wind_direction)")
-
+#loading station wind direction
 tmp_wind_directions = []
 
 
@@ -370,15 +350,14 @@ for year in os.listdir(station_path):
                 
                 
                 tmp_wind_directions.append(f)
-            #data_station_huminity = np.reshape()
-                #print(f.shape)
+            
 data_station_wind_direction = np.array(tmp_wind_directions)
 data_station_wind_direction = np.reshape(data_station_wind_direction,(-1,station_time,210,340,3))
 print("number of videos: ", data_station_wind_direction.shape[0])
 del tmp_wind_directions
 
 print("[INFO] loading satellite data")
-
+# loading satellite data
 tmp_satellite = []
 data_satellite = []
 #cnt = 0
@@ -419,7 +398,7 @@ print("number of videos: ", data_satellite.shape)
 del tmp_satellite
 
 print("[INFO] loading special station")
-
+#loading single station data
 tmp_special_stations = []
 data_special_stations = []
 
@@ -497,33 +476,8 @@ print("number of videos: ", data_special_stations.shape)
 
 del tmp_special_stations
 #data_special_stations = np.zeros((275,12,6))
-'''
-if use_sampling:
-    print("[INFO] sampling")
-    from random import sample
-    delete_sample_index = sample(sample_list,len(data_weather_labels) - positive_number*2)
-    data_weathers = np.delete(data_weathers,delete_sample_index,0)
-    print("shape of data weathers: ", data_weathers.shape)
 
-    category_labels = np.delete(category_labels,delete_sample_index,0)
-    print("shape of category labels: ", category_labels.shape)
-
-    data_station_temperature = np.delete(data_station_temperature,delete_sample_index,0)
-    print("shape of station temp: ", data_station_temperature.shape)
-
-    data_station_huminity = np.delete(data_station_huminity,delete_sample_index,0)
-    print("shape of station huminity: ", data_station_huminity.shape)
-
-    data_station_wind_direction = np.delete(data_station_wind_direction,delete_sample_index,0)
-    print("shape of station wind direction: ", data_station_wind_direction.shape)
-
-    data_satellite = np.delete(data_satellite,delete_sample_index,0)
-    print("shape of satellite ", data_satellite.shape)
-
-    data_special_stations = np.delete(data_special_stations,delete_sample_index,0)
-    print("shape of special stations ", data_special_stations.shape)
-
-'''
+# check if exist missing date in station data
 print("[INFO] check missing data type")
 if data_satellite.shape[0] ==0:
     print("missing satellite data, now pending...")
@@ -535,13 +489,11 @@ if data_weathers.shape[0] == 0:
 
 
 print("[INFO] train-test split")
+# split trainning and testing data
 
 (train_weather_X, test_weather_X, train_weather_Y, test_weather_Y, index_train, index_test) = train_test_split(data_weathers, category_labels, data_weather_labels,
 	test_size=0.20, stratify=category_labels, random_state=random_st)
-#for i in range(len(train_weather_Y)):
-#    if np.argmax(train_weather_Y[i]) == 1:
- #       print("there is positive set in training set")
-  #      break
+
 print("train_weather shape: ", train_weather_X.shape)
 del data_weathers
 print("finish split weather")
@@ -593,17 +545,13 @@ print("finish split satellite")
 
 
 print("[INFO] load model")
-
+# load the model
 
 
 model = keras.models.load_model(model_path)
 model.summary()
 
-# compile our model
-#print("[INFO] compiling model...")
-#opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
-#model.compile(loss="binary_crossentropy", optimizer=opt,
-#	metrics=["accuracy"])
+
 
 # == Provide average scores ==
 second = str(tt.time())
