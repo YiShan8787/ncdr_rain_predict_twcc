@@ -151,19 +151,7 @@ for imagePath in imagePaths:
         data_weather_labels.append(label[3:11])
         #print(imagePath.split(os.path.sep))
     
-    '''
-    if last_label == None:
-        last_label = label[3:11]
-        data_weather_labels.append(last_label)
-        tmp_weathers.append(image)
-    elif last_label == label[3:11]:
-        tmp_weathers.append(image)
-        
-    if len(tmp_weathers) == 4:
-        data_weathers.append(tmp_weathers)
-        tmp_weathers = []
-        last_label = None
-    '''
+    
 
 #print(len(labels))
 # convert the data and labels to NumPy arrays while scaling the pixel
@@ -282,8 +270,7 @@ for year in os.listdir(station_path):
                 
                 
                 tmp_temps.append(f)
-            #data_station_huminity = np.reshape()
-                #print(f.shape)
+            
 data_station_temperature = np.array(tmp_temps)
 data_station_temperature = np.reshape(data_station_temperature,(-1,station_time,210,340,3))
 print("number of videos: ", data_station_temperature.shape[0])
@@ -332,8 +319,7 @@ for year in os.listdir(station_path):
                 
                 
                 tmp_wind_directions.append(f)
-            #data_station_huminity = np.reshape()
-                #print(f.shape)
+            
 data_station_wind_direction = np.array(tmp_wind_directions)
 data_station_wind_direction = np.reshape(data_station_wind_direction,(-1,station_time,210,340,3))
 print("number of videos: ", data_station_wind_direction.shape[0])
@@ -373,9 +359,7 @@ for year in os.listdir(satellite_path):
             f = cv2.imread(date_dir)
             f = f[130:340,:-60]
             tmp_satellite.append(f)
-        #print(cnt)
-            #data_station_huminity = np.reshape()
-                #print(f.shape)
+        
 data_satellite = np.array(data_satellite)
 print("number of videos: ", data_satellite.shape)
 del tmp_satellite
@@ -475,11 +459,7 @@ print("[INFO] load model")
 model = keras.models.load_model(model_path)
 model.summary()
 
-# compile our model
-#print("[INFO] compiling model...")
-#opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
-#model.compile(loss="binary_crossentropy", optimizer=opt,
-#	metrics=["accuracy"])
+
 
 # == Provide average scores ==
 second = str(tt.time())
