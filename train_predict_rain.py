@@ -6,6 +6,7 @@ Created on Wed Jun 16 11:27:15 2021
 """
 
 # import the necessary packages
+# 導入必要函式庫
 
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.layers import AveragePooling2D
@@ -47,6 +48,7 @@ import time as tt
 
 #os.environ["CUDA_VISIBLE_DEVICES"] = "" # use cpu
 # construct the argument parser and parse the arguments
+# 建構必要參數
 
 ###############################################################################
 #----------------------PATH--------------------
@@ -61,9 +63,10 @@ ap.add_argument("-gt", "--gt", type=str, default="/home/om990301/ncdr_rain_predi
 	help="gt for the data")
 station_path = '/home/om990301/ncdr_rain_predict/data/station_data'
 
-#----------------trainning parameters--------
+#----------------trainning parameters--------訓練參數
 # initialize the initial learning rate, number of epochs to train for,
 # and batch size
+# 初始化 學習率、epochs數量、batch 大小、交叉驗證折數、亂樹種子
 INIT_LR = 1e-3
 EPOCHS = 10
 BS = 1
@@ -71,7 +74,7 @@ num_folds = 3
 
 random_st = 42
 
-#-----------preprocessing parameters---------
+#-----------preprocessing parameters---------前處理參數
 #using sampling to balance the dataset T:F = 1:1
 use_sampling = True
 #satellite input frame, default = last 10 frames
@@ -138,7 +141,9 @@ y = 163
 y_len = 340
 x_len = 210
 
+# start for reading weather images
 # loop over the image paths
+# 讀取天氣圖資料
 for imagePath in imagePaths:
     # extract the class label from the filename
     #print(imagePath)
@@ -168,23 +173,13 @@ for imagePath in imagePaths:
         data_weather_labels.append(label[3:11])
         #print(imagePath.split(os.path.sep))
     
-    '''
-    if last_label == None:
-        last_label = label[3:11]
-        data_weather_labels.append(last_label)
-        tmp_weathers.append(image)
-    elif last_label == label[3:11]:
-        tmp_weathers.append(image)
-        
-    if len(tmp_weathers) == 4:
-        data_weathers.append(tmp_weathers)
-        tmp_weathers = []
-        last_label = None
-    '''
+    
 
 #print(len(labels))
+# reshape to (-1,1,340,210,3)
 # convert the data and labels to NumPy arrays while scaling the pixel
 # intensities to the range [0, 1]
+# 將天氣圖資料做一些轉換
 #print(len(data))
 data_weathers = np.reshape(data, (-1,1,340,210,3))
 data = np.array(data) / 255.0
@@ -196,10 +191,11 @@ print("number of videos: ", str(len(data_weathers)))
 print("number of the date of the videos: ", str(data_weathers.shape[0]))
 print(data_weathers.shape)
 
-#del labels
+#del data to save memory
 del data
 
 #find time in labels, then buid the frames
+# 讀取 ground truth 資料
 print("[INFO] category labeling")
 category_labels = []
 positive_number = 0
@@ -215,18 +211,20 @@ for i in range(len(data_weather_labels)):
     
 print("number of positive number: ", str(positive_number))
 print("number of negative number: ", str(len(data_weather_labels) - positive_number))
+# 對資料做one-hot
 # perform one-hot encoding on the labels
 print("[INFO] one-hot")
 category_labels = to_categorical(category_labels)
 
-#test_shape = np.load('/media/ubuntu/My Passport/NCDR/ncdr_rain_predict/data/station_data/2014/06/20140601/huminity_npy/2014060100_huminity_arr.npy')
-#print(test_shape.shape)
+
 
 print("[INFO] loading station data(huminity)")
 
-#station_path = '/media/ubuntu/My Passport/NCDR/ncdr_rain_predict/data/station_data'
 
-#data_station_huminity =[]
+
+# reading station huminity
+# 讀取測站濕度
+
 tmp_huminitys = []
 
 
@@ -252,14 +250,16 @@ for year in os.listdir(station_path):
                 #f[f == np.nan] = 0
                 
                 tmp_huminitys.append(f)
-            #data_station_huminity = np.reshape()
-                #print(f.shape)
+            
 data_station_huminity = np.array(tmp_huminitys)
 data_station_huminity = np.reshape(data_station_huminity,(-1,station_time,210,340,3))
 del tmp_huminitys
 print("number of videos: ", data_station_huminity.shape[0])
 
 print("[INFO] loading station data(temperature)")
+
+#讀取測站溫度
+# reading station temp
 
 #data_station_huminity =[]
 tmp_temps = []
@@ -287,14 +287,15 @@ for year in os.listdir(station_path):
                 
                 
                 tmp_temps.append(f)
-            #data_station_huminity = np.reshape()
-                #print(f.shape)
+            
 data_station_temperature = np.array(tmp_temps)
 data_station_temperature = np.reshape(data_station_temperature,(-1,station_time,210,340,3))
 print("number of videos: ", data_station_temperature.shape[0])
 del tmp_temps
 
 print("[INFO] loading station data(wind_direction)")
+# loading station wind direction
+#讀取測站風向
 
 tmp_wind_directions = []
 
@@ -321,14 +322,16 @@ for year in os.listdir(station_path):
                 
                 
                 tmp_wind_directions.append(f)
-            #data_station_huminity = np.reshape()
-                #print(f.shape)
+            
 data_station_wind_direction = np.array(tmp_wind_directions)
 data_station_wind_direction = np.reshape(data_station_wind_direction,(-1,station_time,210,340,3))
 print("number of videos: ", data_station_wind_direction.shape[0])
 del tmp_wind_directions
 
 print("[INFO] loading satellite data")
+
+# reading satellite data
+# 讀取紅外線衛星資料
 
 tmp_satellite = []
 data_satellite = []
@@ -362,14 +365,15 @@ for year in os.listdir(satellite_path):
             f = cv2.imread(date_dir)
             f = f[130:340,:-60]
             tmp_satellite.append(f)
-        #print(cnt)
-            #data_station_huminity = np.reshape()
-                #print(f.shape)
+        
 data_satellite = np.array(data_satellite)
 print("number of videos: ", data_satellite.shape)
 del tmp_satellite
 
 print("[INFO] loading special station")
+
+# reading special station data
+# 讀取單點測站資料
 
 tmp_special_stations = []
 data_special_stations = []
@@ -427,6 +431,8 @@ data_special_stations = np.array(data_special_stations)
 data_special_stations = np.reshape(data_special_stations,(-1,station_time,len(special_station_input_id)*3))
 print("number of videos: ", data_special_stations.shape)
 
+#決定是否用 sampling
+
 if use_sampling:
     print("[INFO] sampling")
     from random import sample
@@ -454,13 +460,11 @@ if use_sampling:
 
 
 print("[INFO] train-test split")
+# 測試訓練分割
 
 (train_weather_X, test_weather_X, train_weather_Y, test_weather_Y, index_train, index_test) = train_test_split(data_weathers, category_labels, range(data_weathers.shape[0]),
 	test_size=0.20, stratify=category_labels, random_state=random_st)
-#for i in range(len(train_weather_Y)):
-#    if np.argmax(train_weather_Y[i]) == 1:
- #       print("there is positive set in training set")
-  #      break
+
 print("train_weather shape: ", train_weather_X.shape)
 del data_weathers
 print("finish split weather")
@@ -512,6 +516,7 @@ print("finish split satellite")
 
 
 print("[INFO] build model")
+#建置整體網路模型
 
 weather_frames, weather_channels, station_frames, station_channels, rows, columns = 1,3, station_time, 3,210,340
 
@@ -678,10 +683,6 @@ print("[INFO] training head...")
 acc_per_fold = []
 loss_per_fold = []
 
-# Merge inputs and targets
-#inputs_set = np.concatenate((train_weather_X, test_weather_X), axis=0)
-#targets_set = np.concatenate((train_weather_Y, test_weather_Y), axis=0)
-
 # Define the K-fold Cross Validator
 kfold = KFold(n_splits=num_folds, shuffle=True)
 
@@ -817,7 +818,7 @@ plt.xlabel("Epoch #")
 plt.ylabel("Loss/Accuracy")
 plt.legend(loc="lower left")
 #plt.savefig(args["plot"])
-model.save(args["model"])
+
 
 print(second)
 '''
@@ -827,7 +828,7 @@ if acc >= 0.6 or history.history["loss"][-1]<0.5:
 '''
 # serialize the model to disk
 print("[INFO] saving model...")
-
+model.save(args["model"])
 
 f_log.close()
 
