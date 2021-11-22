@@ -9,3 +9,5 @@ weather_image: [here](https://drive.google.com/file/d/16HhiOOow3wj1LrlUdVmpneQry
 satellite_iamge: [here](https://drive.google.com/file/d/1kkqTFzb9CrBnzJy36hGWhX8FV0zdeDe0/view?usp=sharing)
 
 station: [here](https://drive.google.com/file/d/1ZeaR_IZ1GtHUnyy808Coe-Ckw-r7co9z/view?usp=sharing)
+
+model: [here](https://drive.google.com/drive/folders/130wMDQOV7BPkZP4-_H6SIFZ2leMkbhbJ?usp=sharing)
