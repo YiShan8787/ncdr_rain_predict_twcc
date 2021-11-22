@@ -171,7 +171,7 @@ print(data_weathers.shape)
 del data
 
 
-
+# loading station huminity
 print("[INFO] loading station data(huminity)")
 
 
@@ -219,8 +219,7 @@ for year in os.listdir(station_path):
                 #f[f == np.nan] = 0
                 
                 tmp_huminitys.append(f)
-            #data_station_huminity = np.reshape()
-                #print(f.shape)
+            
 data_station_huminity = np.array(tmp_huminitys)
 data_station_huminity = np.reshape(data_station_huminity,(-1,station_time,210,340,3))
 del tmp_huminitys
@@ -228,6 +227,7 @@ print("number of videos: ", data_station_huminity.shape[0])
 
 print("[INFO] loading station data(temperature)")
 
+# loading station temp
 #data_station_huminity =[]
 tmp_temps = []
 
@@ -277,7 +277,7 @@ print("number of videos: ", data_station_temperature.shape[0])
 del tmp_temps
 
 print("[INFO] loading station data(wind_direction)")
-
+# loading station wind direction
 tmp_wind_directions = []
 
 
@@ -324,7 +324,7 @@ data_station_wind_direction = np.array(tmp_wind_directions)
 data_station_wind_direction = np.reshape(data_station_wind_direction,(-1,station_time,210,340,3))
 print("number of videos: ", data_station_wind_direction.shape[0])
 del tmp_wind_directions
-
+# loading satellite data
 print("[INFO] loading satellite data")
 
 tmp_satellite = []
@@ -363,7 +363,7 @@ for year in os.listdir(satellite_path):
 data_satellite = np.array(data_satellite)
 print("number of videos: ", data_satellite.shape)
 del tmp_satellite
-
+#loading single station data
 print("[INFO] loading special station")
 
 tmp_special_stations = []
@@ -441,6 +441,7 @@ data_special_stations = np.array(data_special_stations)
 data_special_stations = np.reshape(data_special_stations,(-1,station_time,len(special_station_input_id)*3))
 print("number of videos: ", data_special_stations.shape)
 
+# check if exist missing date in station data
 print("[INFO] check missing data type")
 if data_satellite.shape[0] ==0:
     print("missing satellite data, now pending...")
